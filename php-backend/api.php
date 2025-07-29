@@ -92,9 +92,9 @@ try {
             error_log("ERROR: MCP JSON-RPC Error when listing tools: Code {$errorCode} - {$errorMessage}");
             // Depending on how critical this is, you might want to exit or throw
             // For now, we'll log and continue as if no tools are available.
-        } elseif (isset($jsonRpcResponse['result']) && is_array($jsonRpcResponse['result'])) {
+        } elseif (isset($jsonRpcResponse['response']) && is_array($jsonRpcResponse['response'])) {
             // The actual tools list is in the 'result' key of the JSON-RPC response
-            $toolsList = $jsonRpcResponse['result'];
+            $toolsList = $jsonRpcResponse['response'];
             error_log("DEBUG: Parsed toolsList (from result): " . print_r($toolsList, true));
 
             if (isset($toolsList['tools']) && is_array($toolsList['tools'])) {
@@ -156,15 +156,14 @@ try {
         error_log("DEBUG: No tools defined or attached to model.");
     }
 
-    // Instantiate the generative model with the tools
+    // Instantiate the generative model with the tools.
     $modelWithTools = $geminiClient->generativeModel(ModelName::GEMINI_1_5_FLASH);
 
-    $chat = $modelWithTools->startChat(); // Start chat with the tool-configured model
+    $chat = $modelWithTools->startChat(); // Start chat with the tool-configured model.
 
 
     // --- Send the initial message (text part only) ---
     $geminiResponse = $chat->sendMessage(new TextPart($userPrompt));
-
 
     $toolCalls = $geminiResponse->candidates[0]->content->parts[0]->toolCalls ?? [];
 

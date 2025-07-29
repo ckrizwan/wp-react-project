@@ -211,8 +211,9 @@ function App() {
             }
 
             const data = await response.json();
-            if (data.candidates && data.candidates[0]?.content.parts[0]) {
-                setGeneratedContent(data.candidates[0].content.parts[0].text);
+
+            if (data.response && data.response) {
+                setGeneratedContent(data.response);
             } else {
                 setGeneratedContent("No content generated. The API response was empty or in an unexpected format.");
             }
