@@ -30,9 +30,10 @@ error_log("DEBUG: CORS headers sent.");
 // --- IMPORTANT: Handle preflight (OPTIONS) requests ---
 // Ensure $_SERVER['REQUEST_METHOD'] is set for HTTP contexts
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
     error_log("DEBUG: OPTIONS request received. Sending 204.");
     http_response_code(204);
-    exit(); // Exit after sending headers for OPTIONS request
+    exit(); // Exit after sending headers for OPTIONS request.
 }
 
 error_log("DEBUG: Processing actual request method: " . ($_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN'));
@@ -92,9 +93,9 @@ try {
             error_log("ERROR: MCP JSON-RPC Error when listing tools: Code {$errorCode} - {$errorMessage}");
             // Depending on how critical this is, you might want to exit or throw
             // For now, we'll log and continue as if no tools are available.
-        } elseif (isset($jsonRpcResponse['response']) && is_array($jsonRpcResponse['response'])) {
+        } elseif (isset($jsonRpcResponse['result']) && is_array($jsonRpcResponse['result'])) {
             // The actual tools list is in the 'result' key of the JSON-RPC response
-            $toolsList = $jsonRpcResponse['response'];
+            $toolsList = $jsonRpcResponse['result'];
             error_log("DEBUG: Parsed toolsList (from result): " . print_r($toolsList, true));
 
             if (isset($toolsList['tools']) && is_array($toolsList['tools'])) {
