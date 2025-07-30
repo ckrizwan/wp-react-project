@@ -197,7 +197,7 @@ function App() {
         try {
             const geminiApiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             const phpBackendURL = 'http://localhost:8080/api.php';
-            const fullPrompt = `${context}\n\nWrite a blog post about: ${prompt}`;
+            const fullPrompt = `${prompt}`;
             const payload = {contents: [{parts: [{text: fullPrompt}]}]};
             const response = await fetch(phpBackendURL, {
                 method: 'POST',
@@ -301,11 +301,6 @@ function App() {
                 <main style={styles.mainGrid}>
                     <div style={styles.formColumn}>
                         <h2 style={styles.h2}>1. Create Your Content</h2>
-                        <div>
-                            <label htmlFor="context" style={styles.label}> Context / Instructions </label>
-                            <textarea id="context" value={context} onChange={(e) => setContext(e.target.value)}
-                                      style={styles.textarea}/>
-                        </div>
                         <div>
                             <label htmlFor="prompt" style={styles.label}> Blog Topic / Prompt </label>
                             <input id="prompt" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)}
