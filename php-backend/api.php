@@ -1,5 +1,5 @@
 <?php
-// Current time is Wednesday, July 30, 2025 at 8:21:27 PM PKT.
+// Current time is Thursday, July 31, 2025 at 1:57 PM PKT.
 require_once __DIR__ . '/vendor/autoload.php';
 
 use GuzzleHttp\Client as GuzzleHttpClient;
@@ -251,22 +251,7 @@ try {
 
 // --- Step 2: Send prompt to Gemini API with Tools ---
 try {
-    // --- SIMPLIFIED PRIMING: ONLY USER ROLE FOR SYSTEM INSTRUCTION ---
-    /*$initialContents = [
-        [
-            'role' => 'user', // System instruction disguised as user turn
-            'parts' => [
-                ['text' => 'You are an AI assistant capable of interacting with a WordPress blog. When the user asks to find, list, or retrieve information about blog posts, use the available tools. Do not attempt to write or publish posts. Focus on retrieving existing content.' ]
-            ]
-        ],
-        [ // This is the actual user prompt from the frontend
-            'role' => 'user',
-            'parts' => [
-                ['text' => $userPrompt]
-            ]
-        ]
-    ];*/
-
+    // --- UPDATED PRIMING INSTRUCTION ---
     $initialContents = [
         [
             'role' => 'user', // System instruction disguised as user turn
@@ -276,12 +261,11 @@ try {
                 **ABSOLUTE AND CRITICAL INSTRUCTION: Your final response to the user MUST ALWAYS BE in natural, human-readable language. NEVER, under any circumstances, output raw tool code, `functionCall` blocks, or any JSON structure representing a tool call directly to the user.** These are for your internal use only.
 
                 Your process should be:
-                1.  **Understand User Request:** Determine if the user wants to search for or retrieve content from the WordPress blog.
-                2.  **Tool Call (Internal Only):** If a tool is needed, construct the `functionCall` internally.
-                    * **For searching content:** Use the `wp_posts_search` tool. The **ONLY** parameter for keywords is `search`. Your internal `functionCall` MUST be like: `{"name": "wp_posts_search", "args": {"search": "your keywords here"}}`.
+                1.  **Prioritize WordPress Search:** When the user asks for content, first attempt to find it in the WordPress blog using available tools like `wp_posts_search` or `wp_get_post`.
+                    * **For searching content:** Use the `wp_posts_search` tool. The **ONLY** parameter for keywords is `search`. Your internal `functionCall` MUST be like: `{"name": "wp_posts_search", "args": {"search": "user\'s keywords"}}`.
                     * **For getting a specific post by ID:** Use the `wp_get_post` tool. The parameter is `id`. Your internal `functionCall` MUST be like: `{"name": "wp_get_post", "args": {"id": 123}}`.
-                3.  **Process Results & Respond (Natural Language):**
-                    * **If content is found:** Present the retrieved content or a summary of it to the user in a clear, natural language response.
+                2.  **Process Results & Respond (Natural Language):**
+                    * **If content is found:** Present the retrieved content or a concise summary of it to the user in a clear, natural language response.
                     * **If content is NOT found (tool returns empty results):**
                         a.  Clearly state that no matching blog post was found (e.g., "I couldn\'t find any blog posts on [user\'s initial topic].").
                         b.  **Immediately generate new content for a blog post on that specific topic**, based on the user\'s initial request.
@@ -417,11 +401,11 @@ try {
         // --- Step 4: Send results back to Gemini for the final response ---
         // This constructs the full conversation history for the next turn
         $conversationHistory = [
-            // User's initial system instruction (index 0)
+            // User's initial system instruction (index 0) - Always include the latest instruction
             [
                 'role' => 'user',
                 'parts' => [
-                    ['text' => 'You are an AI assistant capable of interacting with a WordPress blog. When the user asks to find, list, or retrieve information about blog posts, use the available tools. Do not attempt to write or publish posts. Focus on retrieving existing content.' ]
+                    ['text' => $initialContents[0]['parts'][0]['text'] ] // Reuse the full, updated instruction
                 ]
             ],
             [ // User's initial prompt (index 1)
