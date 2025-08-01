@@ -128,6 +128,21 @@ const styles = {
         padding: '24px',
         border: '1px solid #334155',
     },
+    editablePreview: {
+        backgroundColor: 'rgba(15, 23, 42, 0.7)', // slate-900/70
+        border: '1px solid #334155',
+        borderRadius: '6px',
+        color: '#ffffff',
+        fontFamily: 'sans-serif',
+        fontSize: '1rem',
+        padding: '16px',
+        minHeight: '24rem',
+        width: '100%',
+        resize: 'vertical',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
+        lineHeight: '1.5',
+    },
 };
 
 // Adjust styles for different screen sizes
@@ -321,13 +336,21 @@ function App() {
 
                     <div style={{...styles.formColumn, gap: 0}}>
                         <h2 style={styles.h2}>2. Preview & Publish</h2>
-                        <div style={styles.previewBox}>
-                            {isLoading && <p>Generating your content...</p>}
-                            {!isLoading && !generatedContent &&
-                                <p style={{color: '#64748b'}}>Your generated blog post will appear here.</p>}
-                            {generatedContent && <pre
-                                style={{whiteSpace: 'pre-wrap', fontFamily: 'sans-serif'}}>{generatedContent}</pre>}
-                        </div>
+                        {isLoading ? (
+                            <div style={styles.previewBox}>
+                                <p>Generating your content...</p>
+                            </div>
+                        ) : !generatedContent ? (
+                            <div style={styles.previewBox}>
+                                <p style={{color: '#64748b'}}>Your generated blog post will appear here.</p>
+                            </div>
+                        ) : (
+                            <textarea
+                                style={styles.editablePreview}
+                                value={generatedContent}
+                                onChange={(e) => setGeneratedContent(e.target.value)}
+                            />
+                        )}
 
                         <button onClick={() => setIsWpModalOpen(true)} disabled={!generatedContent || isLoading}
                                 style={{...styles.button, ...styles.wpButton, ...((!generatedContent || isLoading) && styles.buttonDisabled)}}>
