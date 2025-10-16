@@ -254,7 +254,8 @@ try {
     // --- UPDATED PRIMING INSTRUCTION ---
     $initialContents = [
         [
-            'role' => 'user', // System instruction disguised as user turn
+            // System instruction disguised as user turn
+            'role' => 'user',
             'parts' => [
                 ['text' => 'You are an AI assistant capable of interacting with a WordPress blog by using specific tools.
 
