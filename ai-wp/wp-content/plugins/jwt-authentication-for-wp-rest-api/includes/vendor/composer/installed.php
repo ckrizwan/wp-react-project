@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'tmeister/wp-api-jwt-auth',
-        'pretty_version' => 'dev-develop',
-        'version' => 'dev-develop',
-        'reference' => '449f3d07c2827945108cae1202d8e369c3fe7c51',
+        'pretty_version' => '1.4.0',
+        'version' => '1.4.0.0',
+        'reference' => '9dcaeaa7171dc556ac35d569ece9c297c8bdc1bc',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'firebase/php-jwt' => array(
-            'pretty_version' => 'v6.4.0',
-            'version' => '6.4.0.0',
-            'reference' => '4dd1e007f22a927ac77da5a3fbb067b42d3bc224',
+            'pretty_version' => 'v6.3.2',
+            'version' => '6.3.2.0',
+            'reference' => 'ea7dda77098b96e666c5ef382452f94841e439cd',
             'type' => 'library',
             'install_path' => __DIR__ . '/../firebase/php-jwt',
             'aliases' => array(),
@@ -41,9 +41,9 @@
             ),
         ),
         'tmeister/wp-api-jwt-auth' => array(
-            'pretty_version' => 'dev-develop',
-            'version' => 'dev-develop',
-            'reference' => '449f3d07c2827945108cae1202d8e369c3fe7c51',
+            'pretty_version' => '1.4.0',
+            'version' => '1.4.0.0',
+            'reference' => '9dcaeaa7171dc556ac35d569ece9c297c8bdc1bc',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../../',
             'aliases' => array(),

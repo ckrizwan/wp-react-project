@@ -8,11 +8,52 @@ services:
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: Wp@12345!
       WORDPRESS_DB_NAME: wordpress
+
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      WP_MCP_URL: http://wordpress/wp-json/wp/v2/wpmcp
+      WP_MCP_JWT_TOKEN: ${WP_MCP_JWT_TOKEN}
     volumes:
       - ./ai-wp:/var/www/html
+      # Add volume mounts for your api.php and vendor directory
+      - ./php-backend/api.php:/var/www/html/api.php # Mount your api.php
+      - ./php-backend/vendor:/var/www/html/vendor   # Mount your vendor directory for Composer deps
     depends_on:
       - db
-
+    networks: # Explicitly add to a network
+      - app_network
+  # --- Custom PHP Backend (Middleware) ---
+    # --- PHP Backend (now only PHP-FPM) ---
+#  php_backend:
+#    build:
+#      context: ./php-backend
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./php-backend:/var/www/html # Your PHP code mounted here
+#    # NO PORTS HERE! php_backend is NOT directly exposed to the host for HTTP.
+#    # It communicates with nginx_proxy internally via the app_network.
+#    environment: # Keep your environment variables for PHP here
+#      - GEMINI_API_KEY=${GEMINI_API_KEY}
+#      - WP_MCP_URL=http://wordpress:80/wp-json/wp/v2/wpmcp
+#      - WP_MCP_JWT_TOKEN=${WP_MCP_JWT_TOKEN}
+#    depends_on:
+#      - wordpress # Depends on WordPress for database connection
+#    networks:
+#      - app_network
+#
+#  # --- NEW: Nginx Proxy for PHP Backend ---
+#  nginx_proxy:
+#    image: nginx:alpine
+#    volumes:
+#      # Mount your custom Nginx config
+#      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+#      # Nginx needs read access to your PHP files to locate them
+#      - ./php-backend:/var/www/html:ro
+#    ports:
+#      - "9000:80" # Expose Nginx's HTTP port 80 to your host's port 9000
+#    depends_on:
+#      - php_backend # Nginx must start after PHP-FPM
+#    networks:
+#      - app_network
   db:
     image: mariadb:10.6
     environment:
@@ -22,14 +63,36 @@ services:
       MYSQL_PASSWORD: Wp@12345!
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - app_network
 
-  react-app:
+  react-app: # Your React app service for development
     build:
       context: ./ai-react
+      dockerfile: Dockerfile.dev # <--- IMPORTANT: Point to your development Dockerfile
     ports:
-      - "3000:80"
-    depends_on:
-      - wordpress
+      - "3000:3000" # Maps host port 3000 to container port 3000
+    volumes:
+      - ./ai-react:/app # <--- Crucial: Mounts your local React code into the container
+      - /app/node_modules # <--- IMPORTANT: Prevents host's node_modules from conflicting with container's
+    environment:
+      # These environment variables enable polling for file changes,
+      # which is necessary for hot-reloading in Docker containers (especially on Windows/WSL2/macOS).
+      - CHOKIDAR_USEPOLLING=true
+      # For newer React/Webpack versions (CRA 5+), WATCHPACK_POLLING might also be needed.
+      # You can include both for maximum compatibility.
+      - WATCHPACK_POLLING=true
+      # If you face issues with websocket connections, uncomment and adjust WDS_SOCKET_PORT
+      # - WDS_SOCKET_PORT=3000
+    networks:
+      - app_network
+    # command: npm start # You can explicitly set command here, but CMD in Dockerfile is usually enough
+    # stdin_open: true # Optional: Keep stdin open for interactivity (e.g., if CRA prompts you)
+    # tty: true        # Optional: Allocate a pseudo-TTY
+
+networks: # Define the custom network
+  app_network:
+    driver: bridge
 
 volumes:
   db_data: 

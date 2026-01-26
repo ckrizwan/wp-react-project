@@ -1,0 +1,12 @@
+.DS_Store
+Thumbs.db
+.env
+.env.local
+
+/ai-react/node_modules
+/ai-react/build #React production build output
+/ai-react/.env
+
+/php-backend/vendor
+
+.idea

@@ -1,0 +1,24 @@
+# ai-react/Dockerfile.dev
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package.json and package-lock.json first for better caching
+# This step installs dependencies once unless package.json changes
+COPY package.json ./
+# If you use yarn, use yarn.lock and yarn install
+# COPY yarn.lock ./
+RUN npm install
+
+# Copy the rest of your application code
+# This copy is largely for initial image build, as the volume mount will overlay it
+COPY . .
+
+# Expose the port where the React development server will run (default is 3000)
+EXPOSE 3000
+
+# Command to start the React development server
+# For Create React App:
+CMD ["npm", "start"]
+# If you're using Vite, it would typically be:
+# CMD ["npm", "run", "dev"]

@@ -128,6 +128,21 @@ const styles = {
         padding: '24px',
         border: '1px solid #334155',
     },
+    editablePreview: {
+        backgroundColor: 'rgba(15, 23, 42, 0.7)', // slate-900/70
+        border: '1px solid #334155',
+        borderRadius: '6px',
+        color: '#ffffff',
+        fontFamily: 'sans-serif',
+        fontSize: '1rem',
+        padding: '16px',
+        minHeight: '24rem',
+        width: '100%',
+        resize: 'vertical',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
+        lineHeight: '1.5',
+    },
 };
 
 // Adjust styles for different screen sizes
@@ -184,10 +199,7 @@ function App() {
     const [pushMessage, setPushMessage] = useState(null);
 
     const handleGenerate = async () => {
-        if (!apiKey) {
-            setError('Please enter your Gemini API Key.');
-            return;
-        }
+
         if (!prompt) {
             setError('Please enter a blog topic/prompt.');
             return;
@@ -198,9 +210,11 @@ function App() {
         setGeneratedContent('');
 
         try {
-            const fullPrompt = `${context}\n\nWrite a blog post about: ${prompt}`;
+            const geminiApiURL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const phpBackendURL = 'http://localhost:8080/api.php';
+            const fullPrompt = `${prompt}`;
             const payload = {contents: [{parts: [{text: fullPrompt}]}]};
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+            const response = await fetch(phpBackendURL, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
@@ -212,8 +226,9 @@ function App() {
             }
 
             const data = await response.json();
-            if (data.candidates && data.candidates[0]?.content.parts[0]) {
-                setGeneratedContent(data.candidates[0].content.parts[0].text);
+
+            if (data.response && data.response) {
+                setGeneratedContent(data.response);
             } else {
                 setGeneratedContent("No content generated. The API response was empty or in an unexpected format.");
             }
@@ -296,31 +311,18 @@ function App() {
                     <p style={styles.p}> Generate blog content with Google's Gemini API and push it to WordPress. </p>
                 </header>
 
-                <div style={styles.apiKeySection}>
-                    <label htmlFor="apiKey" style={styles.label}> Enter Your Google Gemini API Key </label>
-                    <input id="apiKey" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
-                           placeholder="••••••••••••••••••••••••••••••" style={styles.input}/>
-                    <p style={{...styles.p, fontSize: '0.75rem', marginTop: '8px'}}>Your key is used only for this
-                        session. Get one from <a href="https://aistudio.google.com/app/apikey" target="_blank"
-                                                 rel="noopener noreferrer" style={{color: '#818cf8'}}>Google AI
-                            Studio</a>.</p>
-                </div>
+
 
                 <main style={styles.mainGrid}>
                     <div style={styles.formColumn}>
                         <h2 style={styles.h2}>1. Create Your Content</h2>
                         <div>
-                            <label htmlFor="context" style={styles.label}> Context / Instructions </label>
-                            <textarea id="context" value={context} onChange={(e) => setContext(e.target.value)}
-                                      style={styles.textarea}/>
-                        </div>
-                        <div>
                             <label htmlFor="prompt" style={styles.label}> Blog Topic / Prompt </label>
                             <input id="prompt" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)}
                                    style={styles.input}/>
                         </div>
-                        <button onClick={handleGenerate} disabled={isLoading || !apiKey}
-                                style={{...styles.button, ...((isLoading || !apiKey) && styles.buttonDisabled)}}>
+                        <button onClick={handleGenerate} disabled={isLoading}
+                                style={{...styles.button, ...((isLoading) && styles.buttonDisabled)}}>
                             {isLoading ? <><Spinner/> Generating...</> : <><SendIcon/> Generate</>}
                         </button>
                         {error && <p style={{
@@ -334,13 +336,21 @@ function App() {
 
                     <div style={{...styles.formColumn, gap: 0}}>
                         <h2 style={styles.h2}>2. Preview & Publish</h2>
-                        <div style={styles.previewBox}>
-                            {isLoading && <p>Generating your content...</p>}
-                            {!isLoading && !generatedContent &&
-                                <p style={{color: '#64748b'}}>Your generated blog post will appear here.</p>}
-                            {generatedContent && <pre
-                                style={{whiteSpace: 'pre-wrap', fontFamily: 'sans-serif'}}>{generatedContent}</pre>}
-                        </div>
+                        {isLoading ? (
+                            <div style={styles.previewBox}>
+                                <p>Generating your content...</p>
+                            </div>
+                        ) : !generatedContent ? (
+                            <div style={styles.previewBox}>
+                                <p style={{color: '#64748b'}}>Your generated blog post will appear here.</p>
+                            </div>
+                        ) : (
+                            <textarea
+                                style={styles.editablePreview}
+                                value={generatedContent}
+                                onChange={(e) => setGeneratedContent(e.target.value)}
+                            />
+                        )}
 
                         <button onClick={() => setIsWpModalOpen(true)} disabled={!generatedContent || isLoading}
                                 style={{...styles.button, ...styles.wpButton, ...((!generatedContent || isLoading) && styles.buttonDisabled)}}>
